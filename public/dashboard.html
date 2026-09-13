@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Dashboard - Campus Room Booking</title>
+<meta name="theme-color" content="#c8203a" />
+<link rel="manifest" href="manifest.json" />
+<link rel="apple-touch-icon" href="icons/icon-192.png" />
+<link rel="stylesheet" href="css/style.css" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+</head>
+<body>
+
+<header class="topbar">
+  <span class="topbar-title">Campus Room Booking</span>
+  <button id="logout-btn" class="ghost-btn">Log out</button>
+</header>
+
+<main class="page">
+
+  <div id="suspended-banner" class="banner banner-danger" hidden>
+    Your account is currently suspended due to repeated no-shows. You can't book new appointments.
+    You can still <a href="appeal.html">submit an appeal</a> for a past violation.
+  </div>
+
+  <section class="panel">
+    <h2>Book a room</h2>
+
+    <form id="booking-form" novalidate>
+      <label for="room-select">Room</label>
+      <select id="room-select" required></select>
+
+      <label for="booking-date">Date</label>
+      <input type="date" id="booking-date" required />
+
+      <label for="start-time">Start time</label>
+      <input type="time" id="start-time" required />
+
+      <label for="end-time">End time</label>
+      <input type="time" id="end-time" required />
+
+      <label for="purpose">Purpose</label>
+      <input type="text" id="purpose" placeholder="e.g. Quiet study, counseling session" required />
+
+      <p id="booking-msg" class="msg" hidden></p>
+
+      <button type="submit" id="book-btn">Book appointment</button>
+    </form>
+  </section>
+
+  <section class="panel">
+    <h2>My upcoming appointments</h2>
+    <div id="appointments-list" class="list"></div>
+    <p id="no-appointments" class="empty-state" hidden>No upcoming appointments yet.</p>
+  </section>
+
+</main>
+
+<script type="module" src="js/dashboard.js"></script>
+<script src="js/register-sw.js"></script>
+</body>
+</html>

@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Campus Room Booking</title>
+<meta name="theme-color" content="#c8203a" />
+<link rel="manifest" href="manifest.json" />
+<link rel="apple-touch-icon" href="icons/icon-192.png" />
+<link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+<main class="auth-wrap">
+  <section class="auth-card">
+    <!-- Replace with your school's actual logo image, e.g. <img src="/icons/school-logo.png" alt="School logo"> -->
+    <img src="CU-logo.jpg" alt="school logo" class="school-logo">
+
+    <h1>Capitol University</h1>
+    <h2>Room Booking</h2>
+
+    <form id="login-form" novalidate>
+      <label for="email">School email</label>
+      <input type="email" id="email" placeholder="name@school.edu.ph" required />
+      <p class="hint">Use your official school email address.</p>
+
+      <label for="password">Password</label>
+      <input type="password" id="password" placeholder="Enter your password" required />
+      <p class="hint">Never share your password with anyone.</p>
+
+      <p id="error-msg" class="error-msg" hidden></p>
+
+      <button type="submit" id="login-btn">Log In</button>
+    </form>
+
+    <a href="#" class="forgot-box" id="show-signup">New here? Create an account</a>
+  </section>
+
+  <section class="auth-card" id="check-email-card" hidden>
+    <h1>Check your email</h1>
+    <p class="subtitle" id="check-email-subtitle">
+      We sent a confirmation link to your school email. Click it to activate your account, then come back and log in here.
+    </p>
+  </section>
+</main>
+
+<script type="module" src="js/auth.js"></script>
+<script src="js/register-sw.js"></script>
+</body>
+</html>
