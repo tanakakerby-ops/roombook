@@ -16,9 +16,9 @@ declare
   v_duration int;
   v_capacity int;
 begin
-  select open_time, close_time, slot_duration_minutes, capacity
+  select r.open_time, r.close_time, r.slot_duration_minutes, r.capacity
     into v_open, v_close, v_duration, v_capacity
-    from public.rooms where id = p_room_id;
+    from public.rooms r where r.id = p_room_id;
 
   if v_capacity is null then
     raise exception 'ROOM_NOT_FOUND';
