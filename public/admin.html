@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Admin - Campus Room Booking</title>
+<meta name="theme-color" content="#c8203a" />
+<link rel="manifest" href="manifest.json" />
+<link rel="apple-touch-icon" href="icons/icon-192.png" />
+<link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+<header class="topbar">
+  <span class="topbar-title" id="page-title">Admin</span>
+  <button id="logout-btn" class="ghost-btn">Log out</button>
+</header>
+
+<main class="page">
+
+  <!-- ---- Admin-only: overall totals across every room ---- -->
+  <section class="panel" id="overview-panel" hidden>
+    <h2>Overview</h2>
+    <div class="stat-grid" id="overview-stats"></div>
+  </section>
+
+  <!-- ---- Admin-only: all rooms with facilitator + stats ---- -->
+  <section class="panel" id="rooms-panel" hidden>
+    <h2>Rooms</h2>
+    <div id="rooms-list" class="list"></div>
+  </section>
+
+  <!-- ---- Facilitator: their one room's stats ---- -->
+  <section class="panel" id="my-room-panel" hidden>
+    <h2 id="my-room-title">Your room</h2>
+    <div class="stat-grid" id="my-room-stats"></div>
+  </section>
+
+  <!-- ---- Shared: student breakdown for whichever room is selected ---- -->
+  <section class="panel" id="students-panel" hidden>
+    <h2 id="students-title">Students</h2>
+    <table class="data-table" id="students-table">
+      <thead>
+        <tr><th>Name</th><th>Email</th><th>Bookings</th><th>No-shows</th><th>Active violations</th></tr>
+      </thead>
+      <tbody id="students-tbody"></tbody>
+    </table>
+  </section>
+
+  <!-- ---- Shared: pending appeals ---- -->
+  <section class="panel">
+    <h2>Pending appeals</h2>
+    <div id="appeals-list" class="list"></div>
+    <p id="no-appeals" class="empty-state" hidden>No pending appeals.</p>
+  </section>
+
+</main>
+
+<script type="module" src="js/admin.js"></script>
+<script src="js/register-sw.js"></script>
+</body>
+</html>
