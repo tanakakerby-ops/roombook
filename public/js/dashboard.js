@@ -59,6 +59,7 @@ dateInput.addEventListener("change", loadSlots);
 
 async function loadSlots() {
   selectedSlot = null;
+  document.getElementById("selected-slot-text").hidden = true;
   const roomId = roomSelect.value;
   const date = dateInput.value;
 
@@ -110,9 +111,18 @@ async function loadSlots() {
 
   slotGrid.querySelectorAll(".slot-btn:not([disabled])").forEach((btn) => {
     btn.addEventListener("click", () => {
-      slotGrid.querySelectorAll(".slot-btn").forEach((b) => b.classList.remove("slot-selected"));
+      slotGrid.querySelectorAll(".slot-btn").forEach((b) => {
+        b.classList.remove("slot-selected");
+        const check = b.querySelector(".slot-check");
+        if (check) check.remove();
+      });
       btn.classList.add("slot-selected");
+      btn.insertAdjacentHTML("afterbegin", `<span class="slot-check">&#10003;</span>`);
       selectedSlot = { start: btn.dataset.start, end: btn.dataset.end };
+
+      const summary = document.getElementById("selected-slot-text");
+      summary.hidden = false;
+      summary.textContent = `Selected: ${formatTime(selectedSlot.start)} - ${formatTime(selectedSlot.end)}`;
     });
   });
 }
@@ -184,6 +194,7 @@ bookingForm.addEventListener("submit", async (e) => {
   bookingForm.reset();
   selectedSlot = null;
   slotGrid.innerHTML = "";
+  document.getElementById("selected-slot-text").hidden = true;
   slotHint.hidden = false;
   slotHint.textContent = "Pick a room and date to see available slots.";
   loadAppointments();
