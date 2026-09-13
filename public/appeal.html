@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Submit an appeal - Campus Room Booking</title>
+<meta name="theme-color" content="#c8203a" />
+<link rel="manifest" href="manifest.json" />
+<link rel="apple-touch-icon" href="icons/icon-192.png" />
+<link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+<header class="topbar">
+  <span class="topbar-title">Submit an appeal</span>
+  <a href="dashboard.html" class="ghost-btn" style="text-decoration:none; display:inline-block;">Back to dashboard</a>
+</header>
+
+<main class="page">
+
+  <section class="panel">
+    <p class="list-item-sub" style="margin-bottom:16px;">
+      If you missed an appointment for a valid reason (medical emergency, sudden schedule conflict, etc.),
+      you can appeal the violation here. Include proof if you have it - this helps staff review your case faster.
+    </p>
+
+    <form id="appeal-form" novalidate>
+      <label for="violation-select">Which missed appointment are you appealing?</label>
+      <select id="violation-select" required></select>
+      <p id="no-violations" class="empty-state" hidden>You don't have any active violations to appeal.</p>
+
+      <label for="reason">Reason</label>
+      <textarea id="reason" rows="4" placeholder="Explain what happened..." required style="width:100%; padding:12px 14px; font-size:14px; border:1px solid var(--border); border-radius:8px; font-family:inherit;"></textarea>
+
+      <label for="proof-file">Proof (optional but recommended)</label>
+      <input type="file" id="proof-file" accept="image/*,application/pdf" />
+      <p class="hint">Accepted: images or PDF, up to 5MB.</p>
+
+      <p id="appeal-msg" class="msg" hidden></p>
+
+      <button type="submit" id="submit-appeal-btn">Submit appeal</button>
+    </form>
+  </section>
+
+</main>
+
+<script type="module" src="js/appeal.js"></script>
+<script src="js/register-sw.js"></script>
+</body>
+</html>

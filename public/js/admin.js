@@ -162,7 +162,7 @@ async function loadAppeals() {
         <p class="list-item-title">${a.users?.full_name || a.users?.email}</p>
         <p class="list-item-sub">${a.violations?.appointments?.rooms?.room_name ?? ""} &middot; ${a.violations?.appointments?.appt_date ?? ""}</p>
         <p class="list-item-sub">${a.reason}</p>
-        ${a.proof_file_url ? `<a href="${a.proof_file_url}" target="_blank" class="switch-line">View proof</a>` : ""}
+        ${a.proof_file_url ? `<button class="ghost-btn view-proof-btn" data-path="${a.proof_file_url}" style="margin-top:6px;">View proof</button>` : ""}
       </div>
       <div style="display:flex; gap:8px;">
         <button class="ghost-btn approve-btn" data-id="${a.id}">Approve</button>
@@ -177,6 +177,18 @@ async function loadAppeals() {
   );
   list.querySelectorAll(".deny-btn").forEach((btn) =>
     btn.addEventListener("click", () => reviewAppeal(btn.dataset.id, "denied"))
+  );
+  list.querySelectorAll(".view-proof-btn").forEach((btn) =>
+    btn.addEventListener("click", async () => {
+      const { data, error } = await supabase.storage
+        .from("appeal-proofs")
+        .createSignedUrl(btn.dataset.path, 300);
+      if (error || !data?.signedUrl) {
+        alert("Couldn't load the proof file.");
+        return;
+      }
+      window.open(data.signedUrl, "_blank");
+    })
   );
 }
 

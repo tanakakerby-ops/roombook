@@ -34,11 +34,14 @@
       <label for="booking-date">Date</label>
       <input type="date" id="booking-date" required />
 
-      <label for="start-time">Start time</label>
-      <input type="time" id="start-time" required />
-
-      <label for="end-time">End time</label>
-      <input type="time" id="end-time" required />
+      <label>Available time slots</label>
+      <p id="slot-hint" class="hint">Pick a room and date to see available slots.</p>
+      <div class="slot-legend">
+        <span class="legend-dot legend-available"></span> Available
+        <span class="legend-dot legend-limited"></span> Filling up
+        <span class="legend-dot legend-full"></span> Full
+      </div>
+      <div id="slot-grid" class="slot-grid"></div>
 
       <label for="purpose">Purpose</label>
       <input type="text" id="purpose" placeholder="e.g. Quiet study, counseling session" required />

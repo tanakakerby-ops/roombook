@@ -1,6 +1,8 @@
 import { supabase } from "./supabase-config.js";
 
 let currentUser = null;
+let selectedSlot = null; // { start, end }
+let realtimeChannel = null;
 
 // ---- Guard: must be logged in ----
 const { data: { user } } = await supabase.auth.getUser();
@@ -24,7 +26,7 @@ async function checkAccountStatus() {
 
   if (profile?.account_status === "suspended") {
     document.getElementById("suspended-banner").hidden = false;
-    document.getElementById("booking-form").querySelector("button").disabled = true;
+    document.getElementById("booking-form").querySelector("button[type=submit]").disabled = true;
   }
 }
 
@@ -41,9 +43,102 @@ async function loadRooms() {
     select.innerHTML = `<option value="">No rooms available</option>`;
     return;
   }
-  select.innerHTML = rooms
-    .map((r) => `<option value="${r.id}">${r.room_name} (capacity ${r.capacity})</option>`)
+  select.innerHTML =
+    `<option value="">Select a room</option>` +
+    rooms.map((r) => `<option value="${r.id}">${r.room_name} (capacity ${r.capacity})</option>`).join("");
+}
+
+// ---- Load and render the slot picker whenever room or date changes ----
+const roomSelect = document.getElementById("room-select");
+const dateInput = document.getElementById("booking-date");
+const slotGrid = document.getElementById("slot-grid");
+const slotHint = document.getElementById("slot-hint");
+
+roomSelect.addEventListener("change", loadSlots);
+dateInput.addEventListener("change", loadSlots);
+
+async function loadSlots() {
+  selectedSlot = null;
+  const roomId = roomSelect.value;
+  const date = dateInput.value;
+
+  subscribeToRoomChanges(roomId);
+
+  if (!roomId || !date) {
+    slotGrid.innerHTML = "";
+    slotHint.hidden = false;
+    slotHint.textContent = "Pick a room and date to see available slots.";
+    return;
+  }
+
+  slotHint.hidden = false;
+  slotHint.textContent = "Loading slots...";
+
+  const { data: slots, error } = await supabase.rpc("get_slot_availability", {
+    p_room_id: roomId,
+    p_date: date
+  });
+
+  if (error || !slots?.length) {
+    slotGrid.innerHTML = "";
+    slotHint.textContent = "Couldn't load slots for this room.";
+    return;
+  }
+
+  slotHint.hidden = true;
+  const now = new Date();
+  const isToday = date === now.toISOString().slice(0, 10);
+
+  slotGrid.innerHTML = slots
+    .map((s) => {
+      const isPast = isToday && s.slot_start <= now.toTimeString().slice(0, 5);
+      const full = s.booked_count >= s.capacity;
+      const limited = !full && s.booked_count > 0;
+      const state = isPast ? "past" : full ? "full" : limited ? "limited" : "available";
+      const disabled = isPast || full;
+      return `
+      <button type="button"
+        class="slot-btn slot-${state}"
+        data-start="${s.slot_start}"
+        data-end="${s.slot_end}"
+        ${disabled ? "disabled" : ""}>
+        <span class="slot-time">${formatTime(s.slot_start)} - ${formatTime(s.slot_end)}</span>
+        <span class="slot-count">${s.booked_count}/${s.capacity}</span>
+      </button>`;
+    })
     .join("");
+
+  slotGrid.querySelectorAll(".slot-btn:not([disabled])").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      slotGrid.querySelectorAll(".slot-btn").forEach((b) => b.classList.remove("slot-selected"));
+      btn.classList.add("slot-selected");
+      selectedSlot = { start: btn.dataset.start, end: btn.dataset.end };
+    });
+  });
+}
+
+function formatTime(t) {
+  const [h, m] = t.split(":");
+  const hour = ((+h + 11) % 12) + 1;
+  return `${hour}:${m} ${+h < 12 ? "AM" : "PM"}`;
+}
+
+// Live-refresh the slot grid if someone else books/cancels this room while viewing
+function subscribeToRoomChanges(roomId) {
+  if (realtimeChannel) {
+    supabase.removeChannel(realtimeChannel);
+    realtimeChannel = null;
+  }
+  if (!roomId) return;
+
+  realtimeChannel = supabase
+    .channel(`room-${roomId}-appointments`)
+    .on(
+      "postgres_changes",
+      { event: "*", schema: "public", table: "appointments", filter: `room_id=eq.${roomId}` },
+      () => loadSlots()
+    )
+    .subscribe();
 }
 
 // ---- Booking form submit ----
@@ -54,32 +149,31 @@ bookingForm.addEventListener("submit", async (e) => {
   e.preventDefault();
   bookingMsg.hidden = true;
 
-  const roomId = document.getElementById("room-select").value;
-  const date = document.getElementById("booking-date").value;
-  const startTime = document.getElementById("start-time").value;
-  const endTime = document.getElementById("end-time").value;
+  const roomId = roomSelect.value;
+  const date = dateInput.value;
   const purpose = document.getElementById("purpose").value.trim();
 
   if (!roomId) {
     showMsg("Please select a room.", true);
     return;
   }
-  if (endTime <= startTime) {
-    showMsg("End time must be after start time.", true);
+  if (!selectedSlot) {
+    showMsg("Please pick an available time slot.", true);
     return;
   }
 
   const { error } = await supabase.rpc("book_appointment", {
     p_room_id: roomId,
     p_date: date,
-    p_start: startTime,
-    p_end: endTime,
+    p_start: selectedSlot.start,
+    p_end: selectedSlot.end,
     p_purpose: purpose
   });
 
   if (error) {
     if (error.message.includes("SLOT_FULL")) {
-      showMsg("That slot is already full. Please pick a different time.", true);
+      showMsg("That slot just filled up. Please pick a different time.", true);
+      loadSlots();
     } else {
       showMsg("Something went wrong: " + error.message, true);
     }
@@ -88,6 +182,10 @@ bookingForm.addEventListener("submit", async (e) => {
 
   showMsg("Booking confirmed!", false);
   bookingForm.reset();
+  selectedSlot = null;
+  slotGrid.innerHTML = "";
+  slotHint.hidden = false;
+  slotHint.textContent = "Pick a room and date to see available slots.";
   loadAppointments();
 });
 
@@ -132,7 +230,6 @@ async function loadAppointments() {
     )
     .join("");
 
-  // Render QR codes after the HTML is in the DOM
   appts.forEach((a) => {
     if (a.status === "upcoming") {
       new QRCode(document.getElementById(`qr-${a.id}`), {
