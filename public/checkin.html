@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Check-in - Campus Room Booking</title>
+<meta name="theme-color" content="#c8203a" />
+<link rel="manifest" href="manifest.json" />
+<link rel="apple-touch-icon" href="icons/icon-192.png" />
+<link rel="stylesheet" href="css/style.css" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
+</head>
+<body>
+
+<header class="topbar">
+  <span class="topbar-title">Room check-in</span>
+  <button id="logout-btn" class="ghost-btn">Log out</button>
+</header>
+
+<main class="page">
+
+  <section class="panel">
+    <h2>Scan a student's QR code</h2>
+    <div id="reader"></div>
+  </section>
+
+  <section class="panel" id="result-panel" hidden>
+    <div id="result-success" hidden>
+      <p class="result-icon">✅</p>
+      <p class="list-item-title" id="result-room"></p>
+      <p class="list-item-sub" id="result-purpose"></p>
+      <p class="list-item-sub" id="result-time"></p>
+    </div>
+    <div id="result-error" hidden>
+      <p class="result-icon">⚠️</p>
+      <p class="list-item-title" id="error-text"></p>
+    </div>
+    <button id="scan-next-btn">Scan next student</button>
+  </section>
+
+  <section class="panel">
+    <h2>Or enter the code manually</h2>
+    <form id="manual-form" novalidate>
+      <label for="manual-token">QR token</label>
+      <input type="text" id="manual-token" placeholder="Paste the token here" required />
+      <button type="submit">Check in</button>
+    </form>
+  </section>
+
+</main>
+
+<script type="module" src="js/checkin.js"></script>
+<script src="js/register-sw.js"></script>
+</body>
+</html>

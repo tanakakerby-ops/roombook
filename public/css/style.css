@@ -216,6 +216,11 @@ button:disabled { opacity: 0.6; cursor: not-allowed; }
 .data-table th, .data-table td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--border); }
 .data-table th { color: var(--text-muted); font-weight: 600; font-size: 12px; }
 
+#result-panel { text-align: center; }
+.result-icon { font-size: 40px; margin: 0 0 12px; }
+#scan-next-btn { max-width: 240px; margin: 16px auto 0; }
+#reader { max-width: 400px; margin: 0 auto; }
+
 .error-msg {
   background: var(--danger-bg);
   color: var(--danger);
