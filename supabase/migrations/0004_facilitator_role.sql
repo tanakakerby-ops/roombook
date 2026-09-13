@@ -1,18 +1,17 @@
 -- Rename 'staff' role to 'facilitator' for clarity, and let each
 -- facilitator be assigned to manage one room. Admins can see stats
 -- across every room and facilitator; facilitators only see their own.
+-- Written to be safe to re-run if it partially failed before.
+
+alter table public.users drop constraint if exists users_role_check;
 
 update public.users set role = 'facilitator' where role = 'staff';
 
-alter table public.users drop constraint users_role_check;
 alter table public.users add constraint users_role_check
   check (role in ('student', 'facilitator', 'admin'));
 
-alter table public.rooms add column facilitator_id uuid references public.users(id);
+alter table public.rooms add column if not exists facilitator_id uuid references public.users(id);
 
--- is_staff_or_admin() already checked role in a list — just update the
--- list to match the renamed role. Everything that already depended on
--- this function (appeals, violations, appointment updates) keeps working.
 create or replace function public.is_staff_or_admin()
 returns boolean language sql security definer stable as $$
   select exists (
@@ -21,15 +20,14 @@ returns boolean language sql security definer stable as $$
   );
 $$;
 
-create function public.is_admin()
+create or replace function public.is_admin()
 returns boolean language sql security definer stable as $$
   select exists (
     select 1 from public.users where id = auth.uid() and role = 'admin'
   );
 $$;
 
--- ---------- Stats for one room (its facilitator, or any admin) ----------
-create function public.get_room_summary(p_room_id uuid)
+create or replace function public.get_room_summary(p_room_id uuid)
 returns table(
   room_name text, capacity int, total_bookings bigint, attended bigint,
   no_shows bigint, cancelled bigint, active_violations bigint, pending_appeals bigint
@@ -64,8 +62,7 @@ end;
 $$;
 grant execute on function public.get_room_summary to authenticated;
 
--- ---------- Per-student breakdown for one room ----------
-create function public.get_room_student_breakdown(p_room_id uuid)
+create or replace function public.get_room_student_breakdown(p_room_id uuid)
 returns table(
   user_id uuid, full_name text, email text,
   total_bookings bigint, no_shows bigint, active_violations bigint
@@ -94,8 +91,7 @@ end;
 $$;
 grant execute on function public.get_room_student_breakdown to authenticated;
 
--- ---------- Admin-only: overview across every room and facilitator ----------
-create function public.get_all_rooms_summary()
+create or replace function public.get_all_rooms_summary()
 returns table(
   room_id uuid, room_name text, capacity int, facilitator_name text,
   total_bookings bigint, no_shows bigint, active_violations bigint, pending_appeals bigint
@@ -128,8 +124,7 @@ end;
 $$;
 grant execute on function public.get_all_rooms_summary to authenticated;
 
--- ---------- Admin-only: assign a facilitator to a room ----------
-create function public.assign_facilitator(p_room_id uuid, p_facilitator_id uuid)
+create or replace function public.assign_facilitator(p_room_id uuid, p_facilitator_id uuid)
 returns void
 language plpgsql security definer as $$
 begin
